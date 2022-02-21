@@ -1,4 +1,4 @@
-# Shell implementing using C #
+# Shell implementation using C #
 
 ### Useful Function ###
 - fprintf
