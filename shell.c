@@ -17,7 +17,8 @@ int main(int argc, char* argv[]) {
     size_t line_length = 0;
 
     TOKEN *token_list = NULL;
-    size_t token_list_length = 0;
+    size_t token_list_length = 0, cmd_len;
+    int tokenizer_status;
 
     //Interactive Mode
     if(argc == 1) {
@@ -26,7 +27,13 @@ int main(int argc, char* argv[]) {
         while(!flag) {
             fprintf(stdout, "csh> ");
             getline(&buffer, &line_length, stdin);
-            tokenizer(buffer, &token_list, &token_list_length);
+
+            if((cmd_len = strlen(buffer)) == 1)
+                continue;
+
+            buffer[cmd_len - 1] = '\0';
+
+            tokenizer_status = tokenize(buffer, &token_list, &token_list_length);
 
             free(token_list);
         }
@@ -42,7 +49,18 @@ int main(int argc, char* argv[]) {
         }
 
         while(getline(&buffer, &line_length, file_ptr) != EOF) {
-            tokenizer(buffer, &token_list, &token_list_length);
+            //Skip empty lines
+            if((cmd_len = strlen(buffer)) == 1)
+                continue;
+
+            buffer[cmd_len - 1] = '\0';
+
+            tokenizer_status = tokenize(strdup(buffer), &token_list, &token_list_length);
+
+            if(tokenizer_status == false) {
+                fprintf(stderr, "The command \"%s\" is wrong\n", buffer);
+                exit(1);
+            }
 
             free(token_list);
         }
