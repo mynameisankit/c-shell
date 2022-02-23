@@ -11,6 +11,6 @@ typedef struct TOKEN {
 
 TOKEN* new_token(void);
 
-int tokenize(char *str, TOKEN **token_list, size_t *token_list_length);
+void tokenize(char *str, TOKEN **token_list, size_t *token_list_length);
 
 #endif

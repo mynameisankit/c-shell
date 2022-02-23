@@ -4,7 +4,16 @@
 #include<unistd.h>
 #include<stdbool.h>
 #include<sys/wait.h>
+
+//Custom Headers
+#include<constants.h>
 #include<token.h>
+#include<history.h>
+#include<built-in.h>
+
+HISTORY_STORE *history_store;
+
+void handler(TOKEN *token_list, size_t token_list_length);
 
 int main(int argc, char* argv[]) {
     if(argc > 2) {
@@ -17,13 +26,13 @@ int main(int argc, char* argv[]) {
     size_t line_length = 0;
 
     TOKEN *token_list = NULL;
+    history_store = create_history_store();
     size_t token_list_length = 0, cmd_len;
-    int tokenizer_status;
 
     //Interactive Mode
     if(argc == 1) {
         bool flag = false;
-        
+
         while(!flag) {
             fprintf(stdout, "csh> ");
             getline(&buffer, &line_length, stdin);
@@ -33,7 +42,9 @@ int main(int argc, char* argv[]) {
 
             buffer[cmd_len - 1] = '\0';
 
-            tokenizer_status = tokenize(buffer, &token_list, &token_list_length);
+            tokenize(strdup(buffer), &token_list, &token_list_length);
+            handler(token_list, token_list_length);
+            add_history(history_store, buffer);
 
             free(token_list);
         }
@@ -44,7 +55,7 @@ int main(int argc, char* argv[]) {
         FILE* file_ptr = NULL;
 
         if((file_ptr = fopen(batch_file, "r")) == NULL) {
-            fprintf(stderr, "Cannot open file\n");
+            fprintf(stderr, error_msg);
             exit(1);
         }
 
@@ -55,12 +66,9 @@ int main(int argc, char* argv[]) {
 
             buffer[cmd_len - 1] = '\0';
 
-            tokenizer_status = tokenize(strdup(buffer), &token_list, &token_list_length);
-
-            if(tokenizer_status == false) {
-                fprintf(stderr, "The command \"%s\" is wrong\n", buffer);
-                exit(1);
-            }
+            tokenize(strdup(buffer), &token_list, &token_list_length);
+            handler(token_list, token_list_length);
+            add_history(history_store, buffer);
 
             free(token_list);
         }
@@ -70,6 +78,17 @@ int main(int argc, char* argv[]) {
     }
 
     free(buffer);
+    free(history_store);
 
     return 0;
+}
+
+void handler(TOKEN *token_list, size_t token_list_length) {
+    int built_in_code = get_builtin(token_list[0].val);
+
+    if(built_in_code == -1) {}
+    else
+        builtin_handler(built_in_code, token_list, token_list_length);
+
+    return;
 }
