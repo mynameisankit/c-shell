@@ -16,7 +16,6 @@ const char* built_ins[] = {
     "exit",
     "pwd",
     "history",
-    "!!",
     "path"
 };
 
