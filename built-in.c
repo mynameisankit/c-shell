@@ -10,6 +10,8 @@
 
 extern HISTORY_STORE *history_store;
 
+const size_t built_in = 6;
+
 const char* built_ins[] = {
     "cd",
     "help",
@@ -19,10 +21,10 @@ const char* built_ins[] = {
     "path"
 };
 
-int get_builtin(char *cmd) {
+int get_builtin(char *cmd) {    
     int code = -1;
 
-    for(size_t i = 0; i < BUILT_INS; i++) {
+    for(size_t i = 0; i < built_in; i++) {        
         if(strcmp(cmd, built_ins[i]) == 0) {
             code = i;
             break;

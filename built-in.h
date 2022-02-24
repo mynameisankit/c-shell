@@ -1,8 +1,9 @@
 #ifndef BUILT_IN_H
 #define BUILT_IN_H
 
-#define BUILT_INS 7
+#include<stddef.h>
 
+extern const size_t built_in;
 extern const char* built_ins[];
 
 int get_builtin(char *cmd);
