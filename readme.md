@@ -22,3 +22,9 @@ echo /bin > PATH
 ./csh
 csh > Type your command
 ````
+
+### TOdo ###
+- Background command execution
+- Redirection
+- Parallel Commands
+- Error Handling
