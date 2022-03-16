@@ -15,6 +15,9 @@
 HISTORY_STORE *history_store;
 
 void handler(TOKEN *token_list, size_t token_list_length);
+void init_path_file(void);
+
+char *PATH_FILE = "./PATH";
 
 int main(int argc, char* argv[]) {
     if(argc > 2) {
@@ -22,6 +25,9 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "More number of arguments than required\n");
         exit(1);
     }
+
+    //Get the absolute pathname of the file PATH
+    init_path_file();
 
     bool is_interactive_mode = (argc == 1);
 
@@ -87,6 +93,20 @@ void handler(TOKEN *token_list, size_t token_list_length) {
     }
     else
         builtin_handler(built_in_code, token_list, token_list_length);
+
+    return;
+}
+
+//Determine the canonical path name i.e. absolute pathname
+//of the file path
+void init_path_file(void) {
+    char *file = strdup(PATH_FILE);
+
+    file = realpath(file, NULL);
+    if(file == NULL)
+        fprintf(stderr, "The shell will not work beyond the current directory\n");
+    else
+        PATH_FILE = file;
 
     return;
 }

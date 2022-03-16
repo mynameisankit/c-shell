@@ -2,15 +2,21 @@
 #include<string.h>
 #include<stdlib.h>
 #include<stddef.h>
+#include<unistd.h>
 #include<ctype.h>
 
 #include<token.h>
 #include<built-in.h>
 #include<history.h>
+#include<constants.h>
+
+enum BUILT_IN { CD, HELP, EXIT, PWD, HISTORY, PATH };
 
 extern HISTORY_STORE *history_store;
 
 const size_t built_in = 6;
+
+extern char *PATH_FILE;
 
 const char* built_ins[] = {
     "cd",
@@ -36,14 +42,28 @@ int get_builtin(char *cmd) {
 
 void builtin_handler(int code, TOKEN *token_list, size_t token_list_length) {
     switch(code) {
-        case 1 :
+        case HELP:
             help(token_list, token_list_length);
             break;
-        case 2:
-            exit_shell();
+
+        case EXIT:
+            exit_shell(token_list, token_list_length);
             break;
-        case 4:
+
+        case HISTORY:
             history_cmd(token_list, token_list_length);
+            break;
+
+        case PATH:
+            path(token_list, token_list_length);
+            break;
+
+        case CD:
+            change_dir(token_list, token_list_length);
+            break;
+
+        case PWD:
+            pwd(token_list, token_list_length);
             break;
     }
     
@@ -76,6 +96,73 @@ void history_cmd(TOKEN *token_list, size_t token_list_length) {
     return;
 }
 
-void exit_shell(void) {
-    exit(0);
+void exit_shell(TOKEN *token_list, size_t token_list_length) {
+    if(token_list_length > 1)
+        fprintf(stderr, "No arguments are allowed for exit command\n");
+    else
+        exit(0);
+
+    return;
+}
+
+void path(TOKEN *token_list, size_t token_list_length) {
+    FILE* file_ptr = NULL;
+
+    if((file_ptr = fopen(PATH_FILE, "w")) == NULL) {
+        fprintf(stderr, error_msg);
+        return;
+    }
+
+    for(int i = 1; i < token_list_length; i++)
+        fprintf(file_ptr, "%s\n", token_list[i].val);
+
+    fclose(file_ptr);
+
+    return;
+}
+
+void change_dir(TOKEN *token_list, size_t token_list_length) {
+    if(token_list_length == 1 || token_list_length > 2 || 
+       token_list[0].is_background || token_list[1].is_option) {
+        fprintf(stderr, error_msg);
+        return;
+    }
+
+    if(chdir(token_list[1].val) == -1)
+        fprintf(stderr, error_msg);
+    
+    return;
+}
+
+void pwd(TOKEN *token_list, size_t token_list_length) {
+    if(token_list_length > 1 || token_list[0].is_background) {
+        fprintf(stderr, "No arguments are allowed for exit command\n");
+        return;
+    }
+
+    //Determine the maximum PATH SIZE possible using
+    //pathconf()
+    size_t PATH_MAX = pathconf(".", _PC_PATH_MAX);
+    if(PATH_MAX == -1) {
+        fprintf(stderr, error_msg);
+        return;
+    }
+
+    char *buffer = (char *)malloc(sizeof(char)*PATH_MAX);
+    if(buffer == NULL) {
+        fprintf(stderr, error_msg);
+        return;
+    }
+
+    buffer = getcwd(buffer, PATH_MAX);
+    if(buffer == NULL) {
+        fprintf(stderr, error_msg);
+        return;
+    }
+    else
+        fprintf(stdout, "%s\n", buffer);
+
+    free(buffer);
+    
+    return;
 }

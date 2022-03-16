@@ -9,17 +9,16 @@
 #include<token.h>
 #include<constants.h>
 
-const char *PATH_FILE = "PATH";
+extern char *PATH_FILE;
 
 char* check_cmd(TOKEN *token_list) {
     FILE* file_ptr = NULL;
 
-    if((file_ptr = fopen(PATH_FILE, "r")) == NULL) {
-        fprintf(stderr, error_msg);
-        exit(1);
-    }
+    //Return COMMAND NOT FOUND
+    if((file_ptr = fopen(PATH_FILE, "r")) == NULL)
+        return "";
 
-    char *buffer = NULL;
+    char *buffer = NULL, *program_path = "";
     size_t line_length = 0, cmd_len;
     
     char *cmd = token_list[0].val;
@@ -30,15 +29,19 @@ char* check_cmd(TOKEN *token_list) {
         
         buffer[cmd_len - 1] = '\0';
 
-        char *program_path = buffer;
-        strcat(program_path, "/");
-        strcat(program_path, cmd);
+        char *curr_path = buffer;
+        strcat(curr_path, "/");
+        strcat(curr_path, cmd);
 
-        if(access(program_path, X_OK) == 0) 
-            return program_path;
+        if(access(curr_path, X_OK) == 0) { 
+            program_path = curr_path;
+            break;
+        }
     }
 
-    return "";
+    fclose(file_ptr);
+
+    return program_path;
 }
 
 void execute_command(char *program_path, TOKEN *token_list, size_t token_list_length) {        
@@ -47,7 +50,7 @@ void execute_command(char *program_path, TOKEN *token_list, size_t token_list_le
     if(pid < 0) {
         fprintf(stderr, error_msg);
         return;
-    } 
+    }
     //Child Process
     else if(pid == 0) {
         char **arguments = (char **)malloc(sizeof(char *)*(token_list_length + 1));

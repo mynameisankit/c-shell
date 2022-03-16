@@ -13,7 +13,7 @@ history.o: history.c history.h constants.h
 token.o: token.c token.h constants.h
 	${CC} ${CFLAGS} -c token.c
 
-built-in.o: built-in.c token.h built-in.h history.h
+built-in.o: built-in.c token.h built-in.h history.h constants.h
 	${CC} ${CFLAGS} -c built-in.c
 
 commands.o: commands.c commands.h token.h constants.h

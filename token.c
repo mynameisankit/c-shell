@@ -37,10 +37,11 @@ void tokenize(char *str, TOKEN **token_list, size_t* token_list_length) {
     char *buffer = NULL;
 
     (*token_list_length) = 0;
+    //TODO: Bug (Not working on inputs with &)
     while((buffer = strsep(&str, " \n")) != NULL) {
         if(strlen(buffer) == 0)
             continue;
-
+        
         TOKEN *curr = NULL;
 
         if(strcmp(buffer, "&") == 0) 

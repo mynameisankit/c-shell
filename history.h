@@ -8,8 +8,6 @@ typedef struct HISTORY_STORE {
     size_t curr, max;
 } HISTORY_STORE; 
 
-#define HISTORY_BUFFER 1000
-
 HISTORY_STORE* create_history_store(void);
 
 char* get_history(HISTORY_STORE *history_store, size_t n);

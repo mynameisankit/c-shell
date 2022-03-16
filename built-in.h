@@ -12,6 +12,9 @@ void builtin_handler(int code, TOKEN *token_list, size_t token_list_length);
 
 void help(TOKEN *token_list, size_t token_list_length);
 void history_cmd(TOKEN *token_list, size_t token_list_length);
-void exit_shell(void);
+void exit_shell(TOKEN *token_list, size_t token_list_length);
+void path(TOKEN *token_list, size_t token_list_length);
+void change_dir(TOKEN *token_list, size_t token_list_length);
+void pwd(TOKEN *token_list, size_t token_list_length);
 
 #endif

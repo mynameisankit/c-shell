@@ -6,6 +6,8 @@
 #include<history.h>
 #include<constants.h>
 
+const size_t HISTORY_BUFFER = 1000;
+
 HISTORY_STORE* create_history_store(void) {
     HISTORY_STORE *history_store = (HISTORY_STORE *)malloc(sizeof(HISTORY_STORE));
 

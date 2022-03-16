@@ -23,7 +23,7 @@ echo /bin > PATH
 csh > Type your command
 ````
 
-### TOdo ###
+### Todo ###
 - Background command execution
 - Redirection
 - Parallel Commands
