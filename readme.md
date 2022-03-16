@@ -24,7 +24,5 @@ csh > Type your command
 ````
 
 ### Todo ###
-- Background command execution
 - Redirection
-- Parallel Commands
 - Error Handling

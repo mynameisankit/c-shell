@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
     TOKEN *token_list = NULL;
     size_t token_list_length, buffer_size, cmd_len;
     token_list_length = buffer_size = 0;
+    bool is_valid_cmd;
 
     while(true) {
         if(is_interactive_mode)
@@ -61,8 +62,11 @@ int main(int argc, char* argv[]) {
 
         buffer[cmd_len - 1] = '\0';
 
-        tokenize(strdup(buffer), &token_list, &token_list_length);
-        handler(token_list, token_list_length);        
+        is_valid_cmd = tokenize(strdup(buffer), &token_list, &token_list_length);
+       
+        if(is_valid_cmd && token_list_length)
+            handler(token_list, token_list_length);
+
         add_history(history_store, buffer);
 
         free(token_list);
@@ -79,20 +83,26 @@ int main(int argc, char* argv[]) {
 }
 
 void handler(TOKEN *token_list, size_t token_list_length) {
-    int built_in_code = get_builtin(token_list[0].val);
+    for(size_t pos = 0, cmd_len; pos < token_list_length; pos += cmd_len) {
+        char *curr_cmd = token_list[pos].val;
+        cmd_len = token_list[pos].length;
+        TOKEN* curr_cmd_start = token_list + pos;
 
-    if(built_in_code == -1) {
-        char *program_path = check_cmd(token_list);
+        int built_in_code = get_builtin(curr_cmd);
 
-        if(strlen(program_path) == 0) {
-            printf("Command '%s' not found\n", token_list[0].val);
-            return;
+        if(built_in_code == -1) {
+            char *program_path = check_cmd(curr_cmd);
+
+            if(strlen(program_path) == 0) {
+                printf("Command '%s' not found\n", curr_cmd);
+                return;
+            }
+
+            execute_command(program_path, curr_cmd_start, cmd_len);
         }
-
-        execute_command(program_path, token_list, token_list_length);
+        else
+            builtin_handler(built_in_code, curr_cmd_start, cmd_len);        
     }
-    else
-        builtin_handler(built_in_code, token_list, token_list_length);
 
     return;
 }
@@ -104,7 +114,7 @@ void init_path_file(void) {
 
     file = realpath(file, NULL);
     if(file == NULL)
-        fprintf(stderr, "The shell will not work beyond the current directory\n");
+        fprintf(stderr, "The shell will not work beyond the current directory and non-bultin commands will not work\n");
     else
         PATH_FILE = file;
 

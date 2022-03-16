@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<stdbool.h>
+
 #include<token.h>
 #include<constants.h>
 
@@ -11,15 +12,20 @@ TOKEN* new_token(void) {
     if(tok != NULL) {
         tok->is_background = false;
         tok->is_option = false;
+        tok->is_command = false;
         tok->val = "";
+        tok->length = 0;
     }
 
     return tok;
 }
 
 //Tokenize the string
-void tokenize(char *str, TOKEN **token_list, size_t* token_list_length) {
+bool tokenize(char *str, TOKEN **token_list, size_t* token_list_length) {
     int n = strlen(str);
+
+    if(str == NULL)
+        return false;
 
     //Count the number of tokens
     *token_list_length = 1;
@@ -34,31 +40,55 @@ void tokenize(char *str, TOKEN **token_list, size_t* token_list_length) {
         exit(1);
     }
     
-    char *buffer = NULL;
+    char *token = NULL;
 
     (*token_list_length) = 0;
-    //TODO: Bug (Not working on inputs with &)
-    while((buffer = strsep(&str, " \n")) != NULL) {
-        if(strlen(buffer) == 0)
+    size_t last_cmd = 0, token_len;
+    bool is_sep = true;
+
+    while((token = strsep(&str, " \n")) != NULL) {
+        token_len = strlen(token);
+
+        if(token_len == 0)
             continue;
         
         TOKEN *curr = NULL;
 
-        if(strcmp(buffer, "&") == 0) 
-            (*token_list)[0].is_background = true;
+        if(strcmp(token, "&") == 0) {
+            if((*token_list)[last_cmd].is_background) {
+                fprintf(stderr, "Invalid token \"&\" detected\n");
+                
+                if(last_cmd != 0) 
+                    *token_list_length = last_cmd;
+
+                return false;
+            }
+            else
+                (*token_list)[last_cmd].is_background = true;
+        }
+        else if(strcmp(token, "&&") == 0)
+            is_sep = true;
         else {
             curr = new_token();
 
-            if(buffer[0] == '-') {
+            if(token[0] == '-' || !is_sep) {
                 curr->is_option = true;
-                buffer = strcpy(buffer, buffer + 1);
+                (*token_list)[last_cmd].length++;
             }
-    
-            curr->val = strdup(buffer);
-        }
+            else {
+                curr->is_command = true;
+                curr->length = 1;
 
-        (*token_list)[(*token_list_length)++] = *curr;
+                last_cmd = *token_list_length;
+            }
+
+            curr->val = token;
+            
+            (*token_list)[(*token_list_length)++] = *curr;
+
+            is_sep = false;
+        }
     }
     
-    return;
+    return true;
 }

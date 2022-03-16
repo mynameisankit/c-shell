@@ -11,7 +11,7 @@
 
 extern char *PATH_FILE;
 
-char* check_cmd(TOKEN *token_list) {
+char* check_cmd(char *cmd) {
     FILE* file_ptr = NULL;
 
     //Return COMMAND NOT FOUND
@@ -21,7 +21,6 @@ char* check_cmd(TOKEN *token_list) {
     char *buffer = NULL, *program_path = "";
     size_t line_length = 0, cmd_len;
     
-    char *cmd = token_list[0].val;
     while((cmd_len = getline(&buffer, &line_length, file_ptr)) != EOF) {
         //Skip empty lines
         if(cmd_len == 1)
@@ -46,6 +45,7 @@ char* check_cmd(TOKEN *token_list) {
 
 void execute_command(char *program_path, TOKEN *token_list, size_t token_list_length) {        
     pid_t pid = fork();
+    int status;
 
     if(pid < 0) {
         fprintf(stderr, error_msg);
@@ -68,9 +68,11 @@ void execute_command(char *program_path, TOKEN *token_list, size_t token_list_le
     }
     //Parent Process
     else {
-        int status;
-
-        waitpid(pid, &status, 0);
+        //TODO: Robust handling of background processes
+        if(token_list[0].is_background)
+            printf("%d\n", pid);
+        else
+            waitpid(pid, &status, 0);
 
         //TODO: Add Error Handling
     }

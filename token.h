@@ -6,11 +6,12 @@
 
 typedef struct TOKEN {
     char *val;
-    bool is_option, is_background;
+    bool is_option, is_background, is_command;
+    int length;
 } TOKEN;
 
 TOKEN* new_token(void);
 
-void tokenize(char *str, TOKEN **token_list, size_t *token_list_length);
+bool tokenize(char *str, TOKEN **token_list, size_t *token_list_length);
 
 #endif

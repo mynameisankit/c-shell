@@ -4,11 +4,14 @@
 #include<stddef.h>
 #include<unistd.h>
 #include<ctype.h>
+#include<errno.h>
 
 #include<token.h>
 #include<built-in.h>
 #include<history.h>
 #include<constants.h>
+
+//TODO: Improve error handling
 
 enum BUILT_IN { CD, HELP, EXIT, PWD, HISTORY, PATH };
 
@@ -122,15 +125,13 @@ void path(TOKEN *token_list, size_t token_list_length) {
 }
 
 void change_dir(TOKEN *token_list, size_t token_list_length) {
-    if(token_list_length == 1 || token_list_length > 2 || 
-       token_list[0].is_background || token_list[1].is_option) {
-        fprintf(stderr, error_msg);
-        return;
-    }
+    if(token_list_length == 1) 
+        fprintf(stderr, "Please specify a path\n");
+    else if(token_list_length > 2)
+        fprintf(stderr, "Too many arguments\n");
+    else if(chdir(token_list[1].val) == -1)
+        fprintf(stderr, "%s\n", strerror(errno));
 
-    if(chdir(token_list[1].val) == -1)
-        fprintf(stderr, error_msg);
-    
     return;
 }
 
